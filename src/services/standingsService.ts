@@ -4,87 +4,91 @@ import { CURRENT_SEASON } from "../config/apis.js";
 import type { DriverStandingItem, ConstructorStandingItem } from "../types/standings.js";
 
 export async function getDriverStandings(): Promise<DriverStandingItem[]> {
-  const results = await prisma.result.groupBy({
-    by: ["driverId"],
+  const allResults = await prisma.result.findMany({
     where: { race: { season: CURRENT_SEASON } },
-    _sum: { points: true },
+    include: {
+      driver: {
+        include: { team: { select: { id: true, name: true, colorPrimary: true } } },
+      },
+    },
   });
 
-  const driverIds = results.map((r) => r.driverId);
-  const drivers = await prisma.driver.findMany({
-    where: { id: { in: driverIds } },
-    include: { team: { select: { id: true, name: true, colorPrimary: true } } },
-  });
+  const driverStats = new Map<string, {
+    points: number; wins: number; podiums: number;
+    poles: number; fastestLaps: number; dnfs: number;
+    driver: typeof allResults[0]["driver"];
+  }>();
 
-  const driverMap = new Map(drivers.map((d) => [d.id, d]));
+  for (const r of allResults) {
+    const existing = driverStats.get(r.driverId) ?? {
+      points: 0, wins: 0, podiums: 0, poles: 0, fastestLaps: 0, dnfs: 0,
+      driver: r.driver,
+    };
+    existing.points += r.points;
+    if (r.position === 1) existing.wins++;
+    if (r.position != null && r.position <= 3) existing.podiums++;
+    if (r.gridPosition === 1) existing.poles++;
+    if (r.fastestLap) existing.fastestLaps++;
+    if (r.position == null || (r.status != null && r.status !== "Finished")) existing.dnfs++;
+    driverStats.set(r.driverId, existing);
+  }
 
-  const winCounts = await prisma.result.groupBy({
-    by: ["driverId"],
-    where: { race: { season: CURRENT_SEASON }, position: 1 },
-    _count: true,
-  });
-  const winsMap = new Map(winCounts.map((w) => [w.driverId, w._count]));
-
-  return results
-    .map((r, index) => {
-      const driver = driverMap.get(r.driverId);
-      if (!driver) return null;
-      return {
-        position: index + 1,
-        driverId: driver.id,
-        firstName: driver.firstName,
-        lastName: driver.lastName,
-        abbreviation: driver.abbreviation,
-        number: driver.number,
-        nationality: driver.nationality,
-        points: r._sum.points ?? 0,
-        wins: winsMap.get(r.driverId) ?? 0,
-        teamId: driver.team.id,
-        teamName: driver.team.name,
-        teamColor: driver.team.colorPrimary,
-      };
-    })
-    .filter((item): item is DriverStandingItem => item !== null)
+  return [...driverStats.entries()]
+    .map(([driverId, s]) => ({
+      position: 0,
+      driverId,
+      firstName: s.driver.firstName,
+      lastName: s.driver.lastName,
+      abbreviation: s.driver.abbreviation,
+      number: s.driver.number,
+      nationality: s.driver.nationality,
+      points: s.points,
+      wins: s.wins,
+      podiums: s.podiums,
+      poles: s.poles,
+      fastestLaps: s.fastestLaps,
+      dnfs: s.dnfs,
+      teamId: s.driver.team.id,
+      teamName: s.driver.team.name,
+      teamColor: s.driver.team.colorPrimary,
+    }))
     .sort((a, b) => b.points - a.points)
-    .map((item, index) => ({ ...item, position: index + 1 }));
+    .map((item, i) => ({ ...item, position: i + 1 }));
 }
 
 export async function getConstructorStandings(): Promise<ConstructorStandingItem[]> {
-  const results = await prisma.result.groupBy({
-    by: ["teamId"],
+  const allResults = await prisma.result.findMany({
     where: { race: { season: CURRENT_SEASON } },
-    _sum: { points: true },
+    include: { team: true },
   });
 
-  const teamIds = results.map((r) => r.teamId);
-  const teams = await prisma.team.findMany({
-    where: { id: { in: teamIds } },
-  });
-  const teamMap = new Map(teams.map((t) => [t.id, t]));
+  const teamStats = new Map<string, {
+    points: number; wins: number; podiums: number;
+    team: typeof allResults[0]["team"];
+  }>();
 
-  const winCounts = await prisma.result.groupBy({
-    by: ["teamId"],
-    where: { race: { season: CURRENT_SEASON }, position: 1 },
-    _count: true,
-  });
-  const winsMap = new Map(winCounts.map((w) => [w.teamId, w._count]));
+  for (const r of allResults) {
+    const existing = teamStats.get(r.teamId) ?? {
+      points: 0, wins: 0, podiums: 0, team: r.team,
+    };
+    existing.points += r.points;
+    if (r.position === 1) existing.wins++;
+    if (r.position != null && r.position <= 3) existing.podiums++;
+    teamStats.set(r.teamId, existing);
+  }
 
-  return results
-    .map((r, index) => {
-      const team = teamMap.get(r.teamId);
-      if (!team) return null;
-      return {
-        position: index + 1,
-        teamId: team.id,
-        name: team.name,
-        fullName: team.fullName,
-        color: team.colorPrimary,
-        points: r._sum.points ?? 0,
-        wins: winsMap.get(r.teamId) ?? 0,
-        engine: team.engine,
-      };
-    })
-    .filter((item): item is ConstructorStandingItem => item !== null)
+  return [...teamStats.entries()]
+    .map(([teamId, s]) => ({
+      position: 0,
+      teamId,
+      name: s.team.name,
+      fullName: s.team.fullName,
+      color: s.team.colorPrimary,
+      points: s.points,
+      wins: s.wins,
+      podiums: s.podiums,
+      engine: s.team.engine,
+    }))
     .sort((a, b) => b.points - a.points)
-    .map((item, index) => ({ ...item, position: index + 1 }));
+    .map((item, i) => ({ ...item, position: i + 1 }));
 }

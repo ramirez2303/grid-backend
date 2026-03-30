@@ -8,6 +8,10 @@ export interface DriverStandingItem {
   nationality: string;
   points: number;
   wins: number;
+  podiums: number;
+  poles: number;
+  fastestLaps: number;
+  dnfs: number;
   teamId: string;
   teamName: string;
   teamColor: string;
@@ -21,5 +25,6 @@ export interface ConstructorStandingItem {
   color: string;
   points: number;
   wins: number;
+  podiums: number;
   engine: string;
 }
