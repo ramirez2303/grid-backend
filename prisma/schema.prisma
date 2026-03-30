@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,4 +5,176 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ─── Teams & Drivers ───────────────────────────────────────────
+
+model Team {
+  id            String   @id // e.g. "mclaren", "red-bull"
+  name          String   // e.g. "McLaren"
+  fullName      String   // e.g. "McLaren Racing"
+  colorPrimary  String   // hex e.g. "#FF8000"
+  colorSecondary String? // optional secondary hex
+  base          String?  // e.g. "Woking, UK"
+  teamPrincipal String?
+  engine        String   // e.g. "Mercedes"
+  firstSeason   Int?
+  championships Int      @default(0)
+  wins          Int      @default(0)
+  podiums       Int      @default(0)
+  bio           String?
+
+  drivers  Driver[]
+  results  Result[]
+  upgrades Upgrade[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Driver {
+  id            String  @id // e.g. "norris", "verstappen"
+  firstName     String
+  lastName      String
+  abbreviation  String  // e.g. "NOR"
+  number        Int
+  nationality   String
+  dateOfBirth   DateTime?
+  teamId        String
+  team          Team    @relation(fields: [teamId], references: [id])
+
+  // Career stats
+  championships Int     @default(0)
+  wins          Int     @default(0)
+  podiums       Int     @default(0)
+  poles         Int     @default(0)
+  fastestLaps   Int     @default(0)
+  firstSeason   Int?
+
+  results Result[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Circuits & Races ──────────────────────────────────────────
+
+model Circuit {
+  id         String  @id // e.g. "monza", "silverstone"
+  name       String  // e.g. "Autodromo Nazionale Monza"
+  country    String
+  city       String
+  latitude   Float?
+  longitude  Float?
+  length     Float?  // km
+  turns      Int?
+  drsZones   Int?
+  type       String? // "permanent", "street", "hybrid"
+  svgPath    String? // path to SVG file
+
+  // Lap record
+  lapRecordTime   String?
+  lapRecordDriver String?
+  lapRecordYear   Int?
+
+  races Race[]
+  facts Fact[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Race {
+  id        String   @id @default(uuid())
+  season    Int
+  round     Int
+  name      String   // e.g. "Italian Grand Prix"
+  circuitId String
+  circuit   Circuit  @relation(fields: [circuitId], references: [id])
+  date      DateTime
+  time      String?  // e.g. "14:00:00Z"
+
+  // Sprint race info
+  sprintDate DateTime?
+  sprintTime String?
+
+  results Result[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([season, round])
+}
+
+model Result {
+  id          String  @id @default(uuid())
+  raceId      String
+  race        Race    @relation(fields: [raceId], references: [id])
+  driverId    String
+  driver      Driver  @relation(fields: [driverId], references: [id])
+  teamId      String
+  team        Team    @relation(fields: [teamId], references: [id])
+
+  position    Int?    // null = DNF/DNS
+  gridPosition Int?
+  points      Float   @default(0)
+  status      String? // "Finished", "DNF", "DNS", etc.
+  time        String? // race time or gap
+  fastestLap  Boolean @default(false)
+  fastestLapTime String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([raceId, driverId])
+}
+
+// ─── News ──────────────────────────────────────────────────────
+
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  summary     String?
+  source      String   // e.g. "formula1.com", "motorsport.com"
+  sourceUrl   String   @unique
+  imageUrl    String?
+  publishedAt DateTime
+  topics      String[] // e.g. ["mclaren", "norris", "tecnico"]
+
+  createdAt DateTime @default(now())
+}
+
+// ─── Facts & Trivia ────────────────────────────────────────────
+
+model Fact {
+  id        String  @id @default(uuid())
+  content   String
+  tags      String[] // e.g. ["monza", "ferrari", "history"]
+  circuitId String?
+  circuit   Circuit? @relation(fields: [circuitId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Technical ─────────────────────────────────────────────────
+
+model GlossaryTerm {
+  id          String @id @default(uuid())
+  term        String @unique
+  definition  String
+  category    String? // e.g. "aero", "power-unit", "strategy", "tires"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Upgrade {
+  id          String @id @default(uuid())
+  teamId      String
+  team        Team   @relation(fields: [teamId], references: [id])
+  round       Int    // GP round number
+  component   String // e.g. "front-wing", "floor", "sidepods"
+  description String
+
+  createdAt DateTime @default(now())
 }
