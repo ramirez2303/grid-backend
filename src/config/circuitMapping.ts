@@ -30,6 +30,11 @@ export const jolpicaToGridCircuitId: Record<string, string> = {
   vegas: "las-vegas",
 };
 
+/** Inverse mapping: our circuit ID → Jolpica circuit ID */
+export const gridToJolpicaCircuitId: Record<string, string> = Object.fromEntries(
+  Object.entries(jolpicaToGridCircuitId).map(([jolpica, grid]) => [grid, jolpica]),
+);
+
 export const jolpicaToGridConstructorId: Record<string, string> = {
   mclaren: "mclaren",
   mercedes: "mercedes",

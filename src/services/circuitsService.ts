@@ -41,5 +41,10 @@ export async function getCircuitById(circuitId: string): Promise<CircuitResponse
     lapRecordTime: circuit.lapRecordTime,
     lapRecordDriver: circuit.lapRecordDriver,
     lapRecordYear: circuit.lapRecordYear,
+    numberOfLaps: circuit.numberOfLaps,
+    raceDistance: circuit.raceDistance,
+    firstGrandPrix: circuit.firstGrandPrix,
+    totalEditions: circuit.totalEditions,
+    description: circuit.description,
   };
 }

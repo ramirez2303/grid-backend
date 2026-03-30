@@ -77,6 +77,13 @@ model Circuit {
   lapRecordDriver String?
   lapRecordYear   Int?
 
+  // Enriched data
+  numberOfLaps  Int?
+  raceDistance   String?   // e.g. "306.124 km"
+  firstGrandPrix Int?     // first year this circuit hosted F1
+  totalEditions  Int?
+  description    String?
+
   races Race[]
   facts Fact[]
 

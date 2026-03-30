@@ -12,6 +12,11 @@ export interface CircuitResponse {
   lapRecordTime: string | null;
   lapRecordDriver: string | null;
   lapRecordYear: number | null;
+  numberOfLaps: number | null;
+  raceDistance: string | null;
+  firstGrandPrix: number | null;
+  totalEditions: number | null;
+  description: string | null;
 }
 
 export interface CircuitListItem {
