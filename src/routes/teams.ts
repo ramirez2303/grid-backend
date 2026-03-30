@@ -1,11 +1,7 @@
 import { Router } from "express";
+import { listTeams, showTeam } from "../controllers/teamsController.js";
 
 export const teamsRouter = Router();
 
-teamsRouter.get("/", (_req, res) => {
-  res.json({ message: "GET /api/teams — not implemented" });
-});
-
-teamsRouter.get("/:teamId", (req, res) => {
-  res.json({ message: `GET /api/teams/${req.params["teamId"]} — not implemented` });
-});
+teamsRouter.get("/", listTeams);
+teamsRouter.get("/:teamId", showTeam);

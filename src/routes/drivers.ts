@@ -1,11 +1,7 @@
 import { Router } from "express";
+import { listDrivers, showDriver } from "../controllers/driversController.js";
 
 export const driversRouter = Router();
 
-driversRouter.get("/", (_req, res) => {
-  res.json({ message: "GET /api/drivers — not implemented" });
-});
-
-driversRouter.get("/:driverId", (req, res) => {
-  res.json({ message: `GET /api/drivers/${req.params["driverId"]} — not implemented` });
-});
+driversRouter.get("/", listDrivers);
+driversRouter.get("/:driverId", showDriver);

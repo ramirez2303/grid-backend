@@ -1,7 +1,8 @@
-import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+
+import { env } from "./config/env.js";
 import { calendarRouter } from "./routes/calendar.js";
 import { resultsRouter } from "./routes/results.js";
 import { standingsRouter } from "./routes/standings.js";
@@ -18,7 +19,7 @@ import { upgradesRouter } from "./routes/upgrades.js";
 import { glossaryRouter } from "./routes/glossary.js";
 
 const app = express();
-const PORT = process.env["PORT"] ?? 3001;
+const PORT = env.PORT;
 
 // Middleware
 app.use(helmet());
