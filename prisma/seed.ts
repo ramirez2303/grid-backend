@@ -1,4 +1,6 @@
 import "dotenv/config";
+import pg from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client.js";
 import { teamsData } from "./seed-data/teams.js";
 import { driversData } from "./seed-data/drivers.js";
@@ -9,7 +11,9 @@ if (!databaseUrl) {
   throw new Error("DATABASE_URL is required for seeding");
 }
 
-const prisma = new PrismaClient({ accelerateUrl: databaseUrl });
+const pool = new pg.Pool({ connectionString: databaseUrl });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function seedTeams(): Promise<void> {
   console.log("Seeding teams...");
