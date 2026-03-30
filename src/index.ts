@@ -17,6 +17,7 @@ import { recordsRouter } from "./routes/records.js";
 import { factsRouter } from "./routes/facts.js";
 import { upgradesRouter } from "./routes/upgrades.js";
 import { glossaryRouter } from "./routes/glossary.js";
+import { syncRouter } from "./routes/sync.js";
 
 const app = express();
 const PORT = env.PORT;
@@ -46,6 +47,7 @@ app.use("/api/records", recordsRouter);
 app.use("/api/facts", factsRouter);
 app.use("/api/upgrades", upgradesRouter);
 app.use("/api/glossary", glossaryRouter);
+app.use("/api/sync", syncRouter);
 
 app.listen(PORT, () => {
   console.log(`GRID backend running on port ${PORT}`);

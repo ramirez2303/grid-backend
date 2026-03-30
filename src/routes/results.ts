@@ -1,7 +1,7 @@
 import { Router } from "express";
+import { showResultsByRound, showLastRaceResults } from "../controllers/resultsController.js";
 
 export const resultsRouter = Router();
 
-resultsRouter.get("/:round", (req, res) => {
-  res.json({ message: `GET /api/results/${req.params["round"]} — not implemented` });
-});
+resultsRouter.get("/last", showLastRaceResults);
+resultsRouter.get("/:round", showResultsByRound);

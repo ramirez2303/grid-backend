@@ -1,11 +1,7 @@
 import { Router } from "express";
+import { listDriverStandings, listConstructorStandings } from "../controllers/standingsController.js";
 
 export const standingsRouter = Router();
 
-standingsRouter.get("/drivers", (_req, res) => {
-  res.json({ message: "GET /api/standings/drivers — not implemented" });
-});
-
-standingsRouter.get("/constructors", (_req, res) => {
-  res.json({ message: "GET /api/standings/constructors — not implemented" });
-});
+standingsRouter.get("/drivers", listDriverStandings);
+standingsRouter.get("/constructors", listConstructorStandings);

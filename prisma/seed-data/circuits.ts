@@ -21,4 +21,7 @@ export const circuitsData = [
   { id: "interlagos", name: "Autódromo José Carlos Pace", country: "Brazil", city: "São Paulo", latitude: -23.7036, longitude: -46.6997, length: 4.309, turns: 15, drsZones: 2, type: "permanent" },
   { id: "lusail", name: "Lusail International Circuit", country: "Qatar", city: "Lusail", latitude: 25.49, longitude: 51.4542, length: 5.419, turns: 16, drsZones: 2, type: "permanent" },
   { id: "yas-marina", name: "Yas Marina Circuit", country: "United Arab Emirates", city: "Abu Dhabi", latitude: 24.4672, longitude: 54.6031, length: 5.281, turns: 16, drsZones: 2, type: "permanent" },
+  { id: "budapest", name: "Hungaroring", country: "Hungary", city: "Budapest", latitude: 47.5789, longitude: 19.2486, length: 4.381, turns: 14, drsZones: 2, type: "permanent" },
+  { id: "madrid", name: "Madrid Street Circuit", country: "Spain", city: "Madrid", latitude: 40.4168, longitude: -3.7038, length: 5.47, turns: 20, drsZones: 3, type: "street" },
+  { id: "las-vegas", name: "Las Vegas Street Circuit", country: "United States", city: "Las Vegas", latitude: 36.1147, longitude: -115.1728, length: 6.201, turns: 17, drsZones: 2, type: "street" },
 ] as const;

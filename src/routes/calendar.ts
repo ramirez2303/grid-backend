@@ -1,7 +1,6 @@
 import { Router } from "express";
+import { listCalendar } from "../controllers/calendarController.js";
 
 export const calendarRouter = Router();
 
-calendarRouter.get("/", (_req, res) => {
-  res.json({ message: "GET /api/calendar — not implemented" });
-});
+calendarRouter.get("/", listCalendar);
