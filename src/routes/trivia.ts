@@ -1,7 +1,6 @@
 import { Router } from "express";
+import { randomTrivia } from "../controllers/triviaController.js";
 
 export const triviaRouter = Router();
 
-triviaRouter.get("/random", (_req, res) => {
-  res.json({ message: "GET /api/trivia/random — not implemented" });
-});
+triviaRouter.get("/random", randomTrivia);

@@ -1,7 +1,7 @@
 import { Router } from "express";
+import { showDailyFact, listFacts } from "../controllers/factsController.js";
 
 export const factsRouter = Router();
 
-factsRouter.get("/", (_req, res) => {
-  res.json({ message: "GET /api/facts — not implemented" });
-});
+factsRouter.get("/daily", showDailyFact);
+factsRouter.get("/", listFacts);
