@@ -1,5 +1,5 @@
 import { prisma } from "../config/database.js";
-import { fetchLocation, fetchLaps, fetchPositions } from "./openF1Client.js";
+import { fetchLocation, fetchLaps, fetchPositions, fetchSessionByKey } from "./openF1Client.js";
 
 import type { OF1Location } from "./openF1Client.js";
 import type { TrackOutlineResponse, ReplayDataResponse, ElevationProfileResponse, ReplayFrame, ReplayDriverInfo } from "../types/replay.js";
@@ -13,8 +13,28 @@ async function getDriverMap(): Promise<Map<number, DriverInfo>> {
   return map;
 }
 
-function filterRaceData(records: OF1Location[]): OF1Location[] {
-  return records.filter((r) => r.x !== 0 || r.y !== 0);
+async function getSessionStartTime(sessionKey: number): Promise<number> {
+  const sessions = await fetchSessionByKey(sessionKey);
+  const session = sessions[0];
+  if (!session) return 0;
+  return new Date(session.date_start).getTime();
+}
+
+function filterRaceOnly(records: OF1Location[], sessionStart: number): OF1Location[] {
+  const afterStart = records.filter((r) => {
+    if (r.x === 0 && r.y === 0) return false;
+    return new Date(r.date).getTime() >= sessionStart;
+  });
+  // Skip grid/formation — find first point where car has moved >1000m from initial position
+  if (afterStart.length === 0) return [];
+  const startX = afterStart[0]!.x;
+  const startY = afterStart[0]!.y;
+  const movingIdx = afterStart.findIndex((r) => {
+    const dx = r.x - startX;
+    const dy = r.y - startY;
+    return Math.sqrt(dx * dx + dy * dy) > 1000;
+  });
+  return movingIdx > 0 ? afterStart.slice(movingIdx) : afterStart;
 }
 
 function downsample(records: OF1Location[]): Map<number, OF1Location> {
@@ -30,15 +50,19 @@ export async function getTrackOutline(sessionKey: number): Promise<TrackOutlineR
   const positions = await fetchPositions(sessionKey);
   const leader = positions.find((p) => p.position === 1);
   const driverNum = leader?.driver_number ?? 12;
+  const sessionStart = await getSessionStartTime(sessionKey);
 
   const raw = await fetchLocation(sessionKey, driverNum);
-  const raceData = filterRaceData(raw);
+  const raceData = filterRaceOnly(raw, sessionStart);
 
+  // One lap at Suzuka ~90s, at 4.5Hz = ~405 points. Take 450 to be safe.
   const lapPoints = raceData.slice(0, 450);
 
   const points = lapPoints.map((r) => ({ x: r.x, y: r.y }));
   const xs = points.map((p) => p.x);
   const ys = points.map((p) => p.y);
+
+  console.log(`[Replay] Track outline: ${points.length} points, X: ${Math.min(...xs)}..${Math.max(...xs)}, Y: ${Math.min(...ys)}..${Math.max(...ys)}`);
 
   return {
     points,
@@ -51,6 +75,7 @@ export async function getReplayData(sessionKey: number): Promise<ReplayDataRespo
   const driverNumbers = [...driverMap.keys()];
   const laps = await fetchLaps(sessionKey);
   const totalLaps = Math.max(...laps.map((l) => l.lap_number), 0);
+  const sessionStart = await getSessionStartTime(sessionKey);
 
   console.log(`[Replay] Fetching location for ${driverNumbers.length} drivers...`);
   const locationResults = await Promise.allSettled(
@@ -63,7 +88,7 @@ export async function getReplayData(sessionKey: number): Promise<ReplayDataRespo
     const result = locationResults[i];
     if (!result || result.status !== "fulfilled") continue;
     const driverNum = driverNumbers[i]!;
-    const raceData = filterRaceData(result.value);
+    const raceData = filterRaceOnly(result.value, sessionStart);
     const sampled = downsample(raceData);
 
     for (const [ts, loc] of sampled) {
@@ -78,10 +103,7 @@ export async function getReplayData(sessionKey: number): Promise<ReplayDataRespo
   for (const ts of timestamps) frames[ts] = allFrames.get(ts)!;
 
   const drivers: ReplayDriverInfo[] = driverNumbers
-    .map((num) => {
-      const info = driverMap.get(num);
-      return info ? { driverNumber: num, abbreviation: info.abbreviation, teamColor: info.teamColor } : null;
-    })
+    .map((num) => { const info = driverMap.get(num); return info ? { driverNumber: num, abbreviation: info.abbreviation, teamColor: info.teamColor } : null; })
     .filter((d): d is ReplayDriverInfo => d !== null);
 
   console.log(`[Replay] Data ready: ${timestamps.length} timestamps, ${drivers.length} drivers, ${totalLaps} laps`);
@@ -92,9 +114,10 @@ export async function getElevationProfile(sessionKey: number): Promise<Elevation
   const positions = await fetchPositions(sessionKey);
   const leader = positions.find((p) => p.position === 1);
   const driverNum = leader?.driver_number ?? 12;
+  const sessionStart = await getSessionStartTime(sessionKey);
 
   const raw = await fetchLocation(sessionKey, driverNum);
-  const raceData = filterRaceData(raw);
+  const raceData = filterRaceOnly(raw, sessionStart);
   const lapPoints = raceData.slice(0, 450);
 
   const points: { distance: number; altitude: number }[] = [];
