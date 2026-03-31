@@ -185,3 +185,15 @@ model Upgrade {
 
   createdAt DateTime @default(now())
 }
+
+// ─── Timing Cache ──────────────────────────────────────────────
+
+model TimingCache {
+  id         String   @id @default(uuid())
+  sessionKey Int
+  endpoint   String   // e.g. "laps", "positions", "pit", "stints", etc.
+  data       String   // JSON stringified response
+  createdAt  DateTime @default(now())
+
+  @@unique([sessionKey, endpoint])
+}
