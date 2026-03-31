@@ -6,6 +6,7 @@ const api = axios.create({ baseURL: OPENF1_BASE_URL, timeout: 20000 });
 
 export interface OF1Lap {
   driver_number: number; lap_number: number; lap_duration: number | null;
+  date_start: string | null;
   duration_sector_1: number | null; duration_sector_2: number | null; duration_sector_3: number | null;
   segments_sector_1: number[]; segments_sector_2: number[]; segments_sector_3: number[];
   st_speed: number | null; is_pit_out_lap: boolean;
