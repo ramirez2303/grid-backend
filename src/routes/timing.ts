@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { showTimingBoard, showPitStops, showRaceControl, showWeather, showStrategy } from "../controllers/timingController.js";
+import { showGapChart } from "../controllers/gapChartController.js";
 
 export const timingRouter = Router();
 
@@ -8,3 +9,4 @@ timingRouter.get("/:sessionKey/pitstops", showPitStops);
 timingRouter.get("/:sessionKey/racecontrol", showRaceControl);
 timingRouter.get("/:sessionKey/weather", showWeather);
 timingRouter.get("/:sessionKey/strategy", showStrategy);
+timingRouter.get("/:sessionKey/gaps", showGapChart);
