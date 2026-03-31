@@ -56,3 +56,6 @@ export const fetchPitStops = (sk: number) => cachedGet<OF1Pit>(sk, "pit", "/pit"
 export const fetchStints = (sk: number) => cachedGet<OF1Stint>(sk, "stints", "/stints", { session_key: sk });
 export const fetchRaceControl = (sk: number) => cachedGet<OF1RaceControl>(sk, "race_control", "/race_control", { session_key: sk });
 export const fetchWeather = (sk: number) => cachedGet<OF1Weather>(sk, "weather", "/weather", { session_key: sk });
+
+export interface OF1Location { x: number; y: number; z: number; driver_number: number; date: string }
+export const fetchLocation = (sk: number, driverNumber: number) => cachedGet<OF1Location>(sk, `location-${driverNumber}`, "/location", { session_key: sk, driver_number: driverNumber });
