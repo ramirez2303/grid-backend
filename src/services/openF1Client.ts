@@ -36,6 +36,7 @@ async function get<T>(path: string, params?: Record<string, unknown>): Promise<T
 
 export const fetchMeetings = (year: number) => get<OF1Meeting>("/meetings", { year });
 export const fetchSessions = (meetingKey: number) => get<OF1Session>("/sessions", { meeting_key: meetingKey });
+export const fetchSessionByKey = (sessionKey: number) => get<OF1Session>("/sessions", { session_key: sessionKey });
 export const fetchLaps = (sessionKey: number, driverNumber?: number) => get<OF1Lap>("/laps", { session_key: sessionKey, ...(driverNumber ? { driver_number: driverNumber } : {}) });
 export const fetchPositions = (sessionKey: number) => get<OF1Position>("/position", { session_key: sessionKey });
 export const fetchIntervals = (sessionKey: number) => get<OF1Interval>("/intervals", { session_key: sessionKey });

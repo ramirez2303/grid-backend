@@ -1,5 +1,5 @@
 import { prisma } from "../config/database.js";
-import { fetchLaps, fetchPositions, fetchIntervals, fetchPitStops, fetchStints, fetchSessions } from "./openF1Client.js";
+import { fetchLaps, fetchPositions, fetchIntervals, fetchPitStops, fetchStints, fetchSessionByKey } from "./openF1Client.js";
 import { mapSectorColor, mapCompound, formatLapTime, transformStints } from "./openF1Transform.js";
 
 import type { TimingEntry, TimingResponse, PitStopEntry, StintData } from "../types/timing.js";
@@ -16,11 +16,11 @@ async function getDriverMap(): Promise<Map<number, DriverInfo>> {
 }
 
 export async function getTimingBoard(sessionKey: number): Promise<TimingResponse> {
-  const [laps, positions, intervals, stints, sessions] = await Promise.all([
-    fetchLaps(sessionKey), fetchPositions(sessionKey), fetchIntervals(sessionKey), fetchStints(sessionKey), fetchSessions(0),
+  const [laps, positions, intervals, stints, sessionArr] = await Promise.all([
+    fetchLaps(sessionKey), fetchPositions(sessionKey), fetchIntervals(sessionKey), fetchStints(sessionKey), fetchSessionByKey(sessionKey),
   ]);
   const driverMap = await getDriverMap();
-  const session = sessions.find((s) => s.session_key === sessionKey);
+  const session = sessionArr[0];
 
   const latestPos = new Map<number, number>();
   for (const p of positions) latestPos.set(p.driver_number, p.position);
