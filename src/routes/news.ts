@@ -1,7 +1,7 @@
 import { Router } from "express";
+import { listNews, triggerNewsFetch } from "../controllers/newsController.js";
 
 export const newsRouter = Router();
 
-newsRouter.get("/", (_req, res) => {
-  res.json({ message: "GET /api/news — not implemented" });
-});
+newsRouter.get("/", listNews);
+newsRouter.post("/sync", triggerNewsFetch);

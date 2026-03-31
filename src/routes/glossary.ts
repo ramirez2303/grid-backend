@@ -1,7 +1,6 @@
 import { Router } from "express";
+import { listGlossary } from "../controllers/glossaryController.js";
 
 export const glossaryRouter = Router();
 
-glossaryRouter.get("/", (_req, res) => {
-  res.json({ message: "GET /api/glossary — not implemented" });
-});
+glossaryRouter.get("/", listGlossary);

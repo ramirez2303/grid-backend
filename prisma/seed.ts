@@ -5,6 +5,7 @@ import { PrismaClient } from "../generated/prisma/client.js";
 import { teamsData } from "./seed-data/teams.js";
 import { driversData } from "./seed-data/drivers.js";
 import { circuitsData } from "./seed-data/circuits.js";
+import { glossaryData } from "./seed-data/glossary.js";
 
 const databaseUrl = process.env["DATABASE_URL"];
 if (!databaseUrl) {
@@ -52,11 +53,24 @@ async function seedCircuits(): Promise<void> {
   console.log(`  ${circuitsData.length} circuits seeded.`);
 }
 
+async function seedGlossary(): Promise<void> {
+  console.log("Seeding glossary...");
+  for (const term of glossaryData) {
+    await prisma.glossaryTerm.upsert({
+      where: { term: term.term },
+      update: term,
+      create: term,
+    });
+  }
+  console.log(`  ${glossaryData.length} terms seeded.`);
+}
+
 async function main(): Promise<void> {
   console.log("Starting GRID seed...\n");
   await seedTeams();
   await seedDrivers();
   await seedCircuits();
+  await seedGlossary();
   console.log("\nSeed completed successfully!");
 }
 
