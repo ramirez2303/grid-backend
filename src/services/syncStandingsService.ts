@@ -60,10 +60,7 @@ export async function syncConstructorStandings(): Promise<number> {
     const teamId = jolpicaToGridConstructorId[standing.Constructor.constructorId];
     if (!teamId) continue;
 
-    await prisma.team.update({
-      where: { id: teamId },
-      data: { wins: Number(standing.wins) },
-    });
+    // Don't overwrite historical wins — season wins are in the standings endpoint
     synced++;
   }
 

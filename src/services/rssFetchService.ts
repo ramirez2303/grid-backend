@@ -1,6 +1,15 @@
 import Parser from "rss-parser";
 
-const parser = new Parser({ timeout: 10000 });
+const parser = new Parser({ timeout: 10000, customFields: { item: [["media:content", "media"], ["media:thumbnail", "mediaThumbnail"]] } });
+
+function extractImageFromItem(enclosure: { url?: string } | undefined, media: { $?: { url?: string } } | undefined, thumb: { $?: { url?: string } } | undefined, content: string): string | null {
+  if (enclosure?.url) return enclosure.url;
+  if (media?.$?.url) return media.$.url;
+  if (thumb?.$?.url) return thumb.$.url;
+  const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/);
+  if (imgMatch?.[1]) return imgMatch[1];
+  return null;
+}
 
 const RSS_FEEDS = [
   { url: "https://www.formula1.com/content/fom-website/en/latest/all.xml", source: "formula1.com" },
@@ -34,7 +43,7 @@ export async function fetchAllRssFeeds(): Promise<RawNewsItem[]> {
           summary: (item.contentSnippet ?? item.content ?? "").slice(0, 500).trim(),
           source: feed.source,
           sourceUrl: item.link,
-          imageUrl: item.enclosure?.url ?? null,
+          imageUrl: extractImageFromItem(item.enclosure, item.media, item.mediaThumbnail, String(item.content ?? "")),
           publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
         });
       }
