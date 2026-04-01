@@ -60,3 +60,6 @@ export const fetchWeather = (sk: number) => cachedGet<OF1Weather>(sk, "weather",
 
 export interface OF1Location { x: number; y: number; z: number; driver_number: number; date: string }
 export const fetchLocation = (sk: number, driverNumber: number) => cachedGet<OF1Location>(sk, `location-${driverNumber}`, "/location", { session_key: sk, driver_number: driverNumber });
+
+export interface OF1CarData { date: string; speed: number; throttle: number; brake: number; n_gear: number; rpm: number; drs: number | null; driver_number: number }
+export const fetchCarData = (sk: number, driverNumber: number) => cachedGet<OF1CarData>(sk, `car_data-${driverNumber}`, "/car_data", { session_key: sk, driver_number: driverNumber });
