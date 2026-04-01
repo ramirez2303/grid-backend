@@ -4,6 +4,8 @@ import { getCachedData, setCachedData } from "./timingCacheService.js";
 import { fetchSessions, fetchLocation, fetchLaps } from "./openF1Client.js";
 import { CURRENT_SEASON } from "../config/apis.js";
 
+import { cornerNames } from "../data/cornerNames.js";
+
 import type { CircuitTrackDataResponse, CircuitElevationResponse, CircuitCorner, CircuitMarshalSector } from "../types/circuitTrack.js";
 
 interface MvCorner { number: number; angle: number; length: number; trackPosition: { x: number; y: number } }
@@ -22,9 +24,11 @@ export async function getCircuitTrackData(circuitId: string): Promise<CircuitTra
     const { data } = await axios.get<MvResponse>(`https://api.multiviewer.app/api/v1/circuits/${circuitKey}/${CURRENT_SEASON}`, { timeout: 10000 });
 
     const trackPoints = data.x.map((x, i) => ({ x, y: data.y[i]! }));
+    const names = cornerNames[circuitId] ?? {};
     const corners: CircuitCorner[] = data.corners.map((c) => ({
       number: c.number, angle: Math.round(c.angle), length: Math.round(c.length),
       x: c.trackPosition.x, y: c.trackPosition.y,
+      ...(names[c.number] ? { name: names[c.number] } : {}),
     }));
     const marshalSectors: CircuitMarshalSector[] = data.marshalSectors.map((s) => ({
       number: s.number, x: s.trackPosition.x, y: s.trackPosition.y,

@@ -4,6 +4,7 @@ export interface CircuitCorner {
   length: number;
   x: number;
   y: number;
+  name?: string;
 }
 
 export interface CircuitMarshalSector {
